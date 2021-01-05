@@ -1,106 +1,111 @@
-# Структурный паттерн декоратор
+from abc import ABC, abstractmethod
+
+"""
+Декоратор — это структурный паттерн, 
+который позволяет добавлять объектам новые поведения на лету,
+помещая их в объекты-обёртки.
+"""
 
 
-class Notification:
-    def __init__(self, notification, email):
-        self.notification = notification
-        self.email = email
+class Creature(ABC):
+    @abstractmethod
+    def feed(self):
+        pass
 
-    def send_notification(self):
-        print('Уведомление: ' + self.notification)
-        print('Отправлена на почту: ' + self.email)
-        return 'Отправлена на почту: ' + self.email
+    @abstractmethod
+    def move(self):
+        pass
 
-
-class SendToWhatsUp:
-    def __init__(self, notifaer, whatsup_nickname):
-        self.notifaer = notifaer
-        self.whatsup_nickname = whatsup_nickname
-
-    def send_notification(self):
-        self.notifaer.send_notification()
-        print('Отправлена на WhatsUp: ' + self.whatsup_nickname)
-        return 'Отправлена на WhatsUp: ' + self.whatsup_nickname
+    @abstractmethod
+    def make_noise(self):
+        pass
 
 
-class SendToTelegram:
-    def __init__(self, notifaer, telegram_nickname):
-        self.notifaer = notifaer
-        self.telegram_nickname = telegram_nickname
+class Animal(Creature):
+    def feed(self):
+        print("I eat grass")
 
-    def send_notification(self):
-        self.notifaer.send_notification()
-        print('Отправлена на Telegram: ' + self.telegram_nickname)
-        return 'Отправлена на Telegram: ' + self.telegram_nickname
+    def move(self):
+        print("I walk forward")
 
-
-class SendToVK:
-    def __init__(self, notifaer, Vk_nickname):
-        self.notifaer = notifaer
-        self.Vk_nickname = Vk_nickname
-
-    def send_notification(self):
-        self.notifaer.send_notification()
-        print('Отправлена в Vk: ' + self.Vk_nickname)
-        return 'Отправлена в Vk: ' + self.Vk_nickname
+    def make_noise(self):
+        print("WOOO!")
 
 
-class SendToSlack:
-    def __init__(self, notifaer, slack_nickname):
-        self.notifaer = notifaer
-        self.slack_nickname = slack_nickname
+class AbstractDecorator(Creature):
+    def __init__(self, obj):
+        self.obj = obj
 
-    def send_notification(self):
-        self.notifaer.send_notification()
-        print('Отправлена на Slack: ' + self.slack_nickname)
-        return 'Отправлена на Slack: ' + self.slack_nickname
+    def feed(self):
+        self.obj.feed()
 
+    def move(self):
+        self.obj.move()
 
-class Client:
-    def __init__(self, email, notifications_platforms, nickname=''):
-        self.email = email
-        self.notifications_platforms = notifications_platforms
-        self.nickname = nickname
+    def make_noise(self):
+        self.obj.make_noise()
 
 
+class Swimming(AbstractDecorator):
+    def move(self):
+        print("I swim")
 
-def create_notifaers(clients):
-    notifaers = list()
+    def make_noise(self):
+        print("...")
 
-    i = 1
-    for client in clients:
-        notifaer = Notification('message' + str(i), client.email)
 
-        if 'Slack' in client.notifications_platforms:
-            notifaer = SendToSlack(notifaer, client.nickname)
+class Flying(AbstractDecorator):
+    def move(self):
+        print("I fly")
 
-        if 'VK' in client.notifications_platforms:
-            notifaer = SendToVK(notifaer, client.nickname)
+    def make_noise(self):
+        print("QUAAA!")
 
-        if 'WhatsUp' in client.notifications_platforms:
-            notifaer = SendToWhatsUp(notifaer, client.nickname)
 
-        if 'Telegram' in client.notifications_platforms:
-            notifaer = SendToTelegram(notifaer, client.nickname)
+class Predator(AbstractDecorator):
+    def feed(self):
+        print("I eat other animals")
 
-        notifaers.append(notifaer)
-        i += 1
-    return notifaers
 
-def notifay_all(notifaers):
-    for notifaer in notifaers:
-        notifaer.send_notification()
-        print()
-    # [lambda i: i.send_notification() for i in notifaers]
+class Fast(AbstractDecorator):
+    def move(self):
+        self.obj.move()
+        print("Fast!")
 
 
 if __name__ == '__main__':
-    client1 = Client('434f@dsf', ['Slack', 'Telegram'], 'client1')
-    client2 = Client('fdsafd@dsf', ['WhatsUp', 'VK'], 'client2')
-    client3 = Client('fdsjreio3432i@dsf', ['WhatsUp', 'VK', 'Slack'], 'client3')
+    print("Базовое животное")
+    animal = Animal()
+    animal.feed()
+    animal.move()
+    animal.make_noise()
+    print()
 
-    clients = list()
-    clients.append(client1)
-    clients.append(client2)
-    clients.append(client3)
-    notifay_all(create_notifaers(clients))
+    print("Водоплавающее животное")
+    animal = Swimming(animal)
+    animal.feed()
+    animal.move()
+    animal.make_noise()
+    print()
+
+    print("Хищное животное")
+    animal = Predator(animal)
+    animal.feed()
+    animal.move()
+    animal.make_noise()
+    print()
+
+    print("Добавим хищнику скорости")
+    animal = Fast(animal)
+    animal.feed()
+    animal.move()
+    animal.make_noise()
+    print()
+
+    print("Еще раз добавим хищнику скорости(декораторы можно комбинировать)")
+    animal = Fast(animal)
+    animal.feed()
+    animal.move()
+    animal.make_noise()
+    print()
+
